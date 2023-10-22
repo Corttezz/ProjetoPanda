@@ -200,7 +200,7 @@ export default {
         localStorage.setItem('userData', JSON.stringify(response.data.user));
         // guardar user id
         localStorage.setItem('userId', response.data.userId);
-        this.$router.push('/dashboard');
+        this.$router.push('/dashboard/videos');
       } catch (error) {
         console.error("Erro ao fazer login:", error.response.data);
         // Exibe o modal de erro

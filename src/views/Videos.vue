@@ -13,25 +13,18 @@
       </v-col>
     </v-row>
 
-   <!-- Indicador de Carregamento -->
-   <div 
-      v-if="loading" 
-      class="loader-overlay"
-    >
-      <v-progress-circular
-        indeterminate
-        color="purple darken-2"
-        size="40"
-      ></v-progress-circular>
+    <!-- Indicador de Carregamento -->
+    <div v-if="loading" class="loader-overlay">
+      <v-progress-circular indeterminate color="purple darken-2" size="40"></v-progress-circular>
     </div>
 
     <!-- Mensagem quando não há vídeos -->
     <v-row v-if="videos.length === 0" class="text-center align-center justify-center" style="height: 100vh;">
-  <v-col>
-    <p>Você ainda não tem vídeos, clique em "Upload de Vídeo" para começar.</p>
-    <v-img src="../assets/logo.png" alt="logo" max-width="300" class="mx-auto" style="opacity: 0.3;"></v-img>
-  </v-col>
-</v-row>
+      <v-col>
+        <p>Você ainda não tem vídeos, clique em "Upload de Vídeo" para começar.</p>
+        <v-img src="../assets/logo.png" alt="logo" max-width="300" class="mx-auto" style="opacity: 0.3;"></v-img>
+      </v-col>
+    </v-row>
 
 
     <!-- Lista de Vídeos -->
@@ -40,19 +33,19 @@
         <v-hover v-slot:default="{ hover }">
           <v-card :elevation="hover ? 12 : 2" class="mx-auto" max-width="344" link>
             <div style="position:relative;padding-top:56.25%;">
-              <iframe
-  :id="`panda-${video.id}`"
-  :src="`https://player-vz-fe9765d3-df0.tv.pandavideo.com.br/embed/?v=${video.video_external_id}&preload=false`"
-  style="border:none;position:absolute;top:0;left:0;"
-  width="100%"
-  height="100%"
-></iframe>
+              <iframe :id="`panda-${video.id}`"
+                :src="`https://player-vz-fe9765d3-df0.tv.pandavideo.com.br/embed/?v=${video.video_external_id}&preload=false`"
+                style="border:none;position:absolute;top:0;left:0;" width="100%" height="100%"></iframe>
 
             </div>
 
 
             <v-card-title>{{ video.title }}</v-card-title>
-          <v-card-subtitle :class="statusClass(video.status)">{{ statusText(video.status) }}</v-card-subtitle>
+            <v-card-subtitle :class="statusClass(video.status)">{{ statusText(video.status) }}</v-card-subtitle>
+            <v-card-text>
+              {{ video.video_id }}
+            </v-card-text>
+
 
             <v-card-actions>
               <v-btn icon @click="onEditVideo(video)">
@@ -66,6 +59,21 @@
         </v-hover>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="confirmDeleteDialog" persistent max-width="300">
+      <v-card>
+        <v-card-title class="headline">Confirmar exclusão</v-card-title>
+        <v-card-text>
+          Você tem certeza que deseja excluir este vídeo?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="green darken-1" text @click="confirmDeleteDialog = false">Cancelar</v-btn>
+          <v-btn color="red darken-1" text @click="confirmDelete">Excluir</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -89,6 +97,9 @@ export default {
       videos: [],
       uppy: null,
       user: null,
+      confirmDeleteDialog: false,
+      selectedVideo: null,
+      pollingInterval: null
     };
   },
   async mounted() {
@@ -123,44 +134,48 @@ export default {
 
       this.uppy.on('complete', async (result) => {
         this.loading = true;
-  const successfulUploads = result.successful || [];
-  for (const file of successfulUploads) {
-    try {
-      const videoDetails = await this.fetchVideoDetails(file.meta.video_id);
+        const successfulUploads = result.successful || [];
+        for (const file of successfulUploads) {
+          try {
+            const videoDetails = await this.fetchVideoDetails(file.meta.video_id);
 
-      await axios.post('http://192.168.15.31:3000/library', {
-        userId: userId,
-        videoId: file.meta.video_id,
-        videoExternalId: videoDetails.video_external_id,
-        status: 'DRAFT', // Definindo o status inicial como DRAFT
-        title: file.name,
-        libraryId: this.user.library_id,
+            await axios.post('http://192.168.15.31:3000/library', {
+              userId: userId,
+              videoId: file.meta.video_id,
+              videoExternalId: videoDetails.video_external_id,
+              status: 'DRAFT', // Definindo o status inicial como DRAFT
+              title: file.name,
+              libraryId: this.user.library_id,
+            });
+
+            const newVideo = {
+              videoId: file.meta.video_id,
+              id: file.meta.video_id,
+              url: videoDetails.url,
+              video_external_id: videoDetails.video_external_id,
+              title: file.name,
+              description: videoDetails.description,
+              status: 'DRAFT', // Aqui também, asseguramos que o status inicial é DRAFT
+            };
+            this.videos.push(newVideo);
+
+            this.monitorVideoStatus(file.meta.video_id, this.user.library_id);
+            await this.loadVideos(userId);
+
+          } catch (error) {
+            console.error('Erro ao enviar dados para a biblioteca ou ao recuperar detalhes do vídeo:', error);
+          }
+
+        }
+        this.loading = false;
       });
 
-      const newVideo = {
-        id: file.meta.video_id,
-        url: videoDetails.url,
-        video_external_id: videoDetails.video_external_id,
-        title: file.name,
-        description: videoDetails.description,
-        status: 'DRAFT', // Aqui também, asseguramos que o status inicial é DRAFT
-      };
-      this.videos.push(newVideo);
-
-      this.monitorVideoStatus(file.meta.video_id, this.user.library_id);
-
-    } catch (error) {
-      console.error('Erro ao enviar dados para a biblioteca ou ao recuperar detalhes do vídeo:', error);
-    }
-
-  }
-  this.loading = false;
-});
-
       await this.loadVideos(userId);
+      this.startPolling(); 
     } catch (error) {
       console.error('Erro na montagem:', error);
     }
+    clearInterval(this.pollingInterval);
   },
   beforeDestroy() {
     if (this.uppy) {
@@ -168,12 +183,24 @@ export default {
     }
   },
   methods: {
+    startPolling() {
+      this.pollingInterval = setInterval(async () => {
+        await this.loadVideos(localStorage.getItem('userId'));
+      }, 10000); // A cada 10 segundos, por exemplo.
+    },
     onEditVideo(video) {
       console.log('Editando vídeo:', video);
     },
     onDeleteVideo(video) {
-      console.log('Excluindo vídeo:', video);
+      this.selectedVideo = video;
+      this.confirmDeleteDialog = true;
     },
+    confirmDelete() {
+      this.deleteVideo(this.selectedVideo);
+      this.confirmDeleteDialog = false;
+      this.selectedVideo = null;
+    },
+
     statusClass(status) {
       if (status === 'CONVERTED') {
         return 'status-converted';
@@ -192,6 +219,7 @@ export default {
           return status; // ou outro texto padrão que você queira mostrar
       }
     },
+
     async loadVideos(userId) {
       this.loading = true;
       try {
@@ -231,59 +259,88 @@ export default {
         }
       }
     },
-    async monitorVideoStatus(videoId, libraryId, interval = 30000, timeout = 3600000) {
-  console.log('Starting video status monitoring for videoId:', videoId);
+    async deleteVideo(video) {
+      try {
+        // Excluir do backend local
+        await axios.delete(`http://192.168.15.31:3000/library/${video.video_id}`);
 
-  const startTime = new Date();
-
-  const checkStatus = async () => {
-    if (new Date() - startTime > timeout) {
-      console.error('Timeout exceeded while waiting for CONVERTED status');
-      return;
-    }
-
-    try {
-      const response = await axios.get(`https://api-v2.pandavideo.com.br/videos/${videoId}`, {
-        headers: {
-          'Authorization': 'panda-f3c410ff76dad651c9834316eaa3cf45725ae97abc2162ad9abbe01b170c44e5',
-          'accept': 'application/json'
-        }
-      });
-
-      const videoDetails = response.data;
-
-      console.log('Current video status:', videoDetails.status);
-
-      if (videoDetails.status === 'CONVERTED') {
-        console.log('Video converted, updating database.');
-
-        const updateResponse = await axios.put(`http://192.168.15.31:3000/library/${videoId}`, {
-          status: 'CONVERTED',
-          videoExternalId: videoDetails.video_external_id,
+        // Excluir do servidor Panda Video
+        await axios({
+          method: 'DELETE',
+          url: 'https://api-v2.pandavideo.com.br/videos',
+          headers: {
+            'Authorization': 'panda-f3c410ff76dad651c9834316eaa3cf45725ae97abc2162ad9abbe01b170c44e5', // Certifique-se de usar a autenticação correta aqui
+            'accept': 'application/json',
+            'content-type': 'application/json',
+          },
+          data: [
+            {
+              "video_id": video.video_id
+            }
+          ],
         });
 
-        console.log('Database update response:', updateResponse.data);
+        // Remover o vídeo da lista local
+        this.videos = this.videos.filter(v => v.id !== video.id);
 
-        // Aqui é onde atualizamos o status do vídeo no frontend
-        const index = this.videos.findIndex(v => v.id === videoId);
-        if (index !== -1) {
-          this.$set(this.videos, index, {
-            ...this.videos[index],
-            status: 'CONVERTED', // atualiza o status para CONVERTED
-          });
-        }
-      } else {
-        console.log(`Current status: ${videoDetails.status}. Re-checking in ${interval}ms.`);
-        setTimeout(checkStatus, interval);
+      } catch (error) {
+        console.error('Erro ao excluir vídeo:', error);
       }
-    } catch (error) {
-      console.error('Error checking video status:', error);
-      setTimeout(checkStatus, interval);
-    }
-  };
+    },
+    async monitorVideoStatus(videoId, libraryId, interval = 30000, timeout = 3600000) {
+      console.log('Starting video status monitoring for videoId:', videoId);
 
-  checkStatus();
-}
+      const startTime = new Date();
+
+      const checkStatus = async () => {
+        if (new Date() - startTime > timeout) {
+          console.error('Timeout exceeded while waiting for CONVERTED status');
+          return;
+        }
+
+        try {
+          const response = await axios.get(`https://api-v2.pandavideo.com.br/videos/${videoId}`, {
+            headers: {
+              'Authorization': 'panda-f3c410ff76dad651c9834316eaa3cf45725ae97abc2162ad9abbe01b170c44e5',
+              'accept': 'application/json'
+            }
+          });
+
+          const videoDetails = response.data;
+
+          console.log('Current video status:', videoDetails.status);
+
+          if (videoDetails.status === 'CONVERTED') {
+            console.log('Video converted, updating database.');
+
+            const updateResponse = await axios.put(`http://192.168.15.31:3000/library/${videoId}`, {
+              status: 'CONVERTED',
+              videoExternalId: videoDetails.video_external_id,
+            });
+
+            console.log('Database update response:', updateResponse.data);
+
+            // Aqui é onde atualizamos o status do vídeo no frontend
+            const index = this.videos.findIndex(v => v.id === videoId);
+            if (index !== -1) {
+              this.$set(this.videos, index, {
+                ...this.videos[index],
+                status: 'CONVERTED'
+              });
+            }
+          } else {
+            console.log(`Current status: ${videoDetails.status}. Re-checking in ${interval}ms.`);
+            setTimeout(checkStatus, interval);
+          }
+        } catch (error) {
+          console.error('Error checking video status:', error);
+          setTimeout(checkStatus, interval);
+        }
+      };
+
+      checkStatus();
+    }
+
 
 
   },
@@ -292,17 +349,16 @@ export default {
 
 
 <style scoped>
-
 .v-content {
   padding-left: 0px !important
 }
 
 .status-converted {
-  color: green !important; 
+  color: green !important;
 }
 
 .status-draft {
-  color: red !important; 
+  color: red !important;
 }
 
 .video-preview {
@@ -312,11 +368,15 @@ export default {
 }
 
 .loader-overlay {
-  position: fixed; /* Fixo em relação à janela do navegador */
-  top: 6%; /* Posicionado na metade da tela verticalmente */
-  left: 58%; /* Posicionado na metade da tela horizontalmente */
-  transform: translate(-50%, -50%); /* Desloca o elemento para trás pela metade de sua largura e altura */
-  z-index: 9999; /* Certifique-se de que está no topo */
+  position: fixed;
+  /* Fixo em relação à janela do navegador */
+  top: 6%;
+  /* Posicionado na metade da tela verticalmente */
+  left: 58%;
+  /* Posicionado na metade da tela horizontalmente */
+  transform: translate(-50%, -50%);
+  /* Desloca o elemento para trás pela metade de sua largura e altura */
+  z-index: 9999;
+  /* Certifique-se de que está no topo */
 }
-
 </style>

@@ -33,6 +33,11 @@ const routes = [
         name: 'account',
         component: () => import('../views/Account.vue'),
       },
+      {
+        path: 'live',
+        name: 'live',
+        component: () => import('../views/Live.vue'),
+      },
     ],
   },
 ];

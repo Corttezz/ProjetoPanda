@@ -221,6 +221,6 @@ export default {
 }
 
 .mdi-loading {
-  animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite; 
 }
 </style>

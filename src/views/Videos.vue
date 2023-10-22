@@ -109,7 +109,7 @@ export default {
         throw new Error('Usuário não autenticado');
       }
 
-      const response = await axios.get(`http://192.168.15.31:3000/users/${userId}`);
+      const response = await axios.get(`https://projetopanda-webapp.azurewebsites.net/users/${userId}`);
       this.user = response.data.user;
 
       this.uppy = new Uppy()
@@ -139,7 +139,7 @@ export default {
           try {
             const videoDetails = await this.fetchVideoDetails(file.meta.video_id);
 
-            await axios.post('http://192.168.15.31:3000/library', {
+            await axios.post('https://projetopanda-webapp.azurewebsites.net/library', {
               userId: userId,
               videoId: file.meta.video_id,
               videoExternalId: videoDetails.video_external_id,
@@ -223,7 +223,7 @@ export default {
     async loadVideos(userId) {
       this.loading = true;
       try {
-        const response = await axios.get(`http://192.168.15.31:3000/library/user/${userId}`);
+        const response = await axios.get(`https://projetopanda-webapp.azurewebsites.net/library/user/${userId}`);
         console.log('Loaded videos:', response.data);
         this.videos = response.data;
       } catch (error) {
@@ -262,7 +262,7 @@ export default {
     async deleteVideo(video) {
       try {
         // Excluir do backend local
-        await axios.delete(`http://192.168.15.31:3000/library/${video.video_id}`);
+        await axios.delete(`https://projetopanda-webapp.azurewebsites.net/library/${video.video_id}`);
 
         // Excluir do servidor Panda Video
         await axios({
@@ -313,7 +313,7 @@ export default {
           if (videoDetails.status === 'CONVERTED') {
             console.log('Video converted, updating database.');
 
-            const updateResponse = await axios.put(`http://192.168.15.31:3000/library/${videoId}`, {
+            const updateResponse = await axios.put(`https://projetopanda-webapp.azurewebsites.net/library/${videoId}`, {
               status: 'CONVERTED',
               videoExternalId: videoDetails.video_external_id,
             });

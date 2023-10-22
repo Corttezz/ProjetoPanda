@@ -167,10 +167,12 @@ export default {
           password: this.password,
           name: this.name
         });
+        // eslint-disable-next-line no-console
         console.log(response.data);
         // Se o cadastro foi bem-sucedido, mostre o diálogo de sucesso
         this.registerSuccessDialog = true;
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Erro ao registrar:", error.response.data);
         // Aqui, você pode querer mostrar um modal de erro ou outra forma de notificação
         this.showErrorModal('Erro no Registro', error.response.data.message || 'Ocorreu um erro desconhecido.');
@@ -195,6 +197,7 @@ export default {
           email: this.email,
           password: this.password
         });
+        // eslint-disable-next-line no-console
         console.log(response.data);
         localStorage.setItem('userToken', response.data.token); 
         localStorage.setItem('userData', JSON.stringify(response.data.user));
@@ -202,6 +205,7 @@ export default {
         localStorage.setItem('userId', response.data.userId);
         this.$router.push('/dashboard/videos');
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Erro ao fazer login:", error.response.data);
         // Exibe o modal de erro
         this.showErrorModal('Erro no Login', error.response.data.message || 'Ocorreu um erro desconhecido.');

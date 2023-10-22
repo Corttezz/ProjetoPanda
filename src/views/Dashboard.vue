@@ -59,8 +59,10 @@ export default {
       const userId = localStorage.getItem('userId'); 
       const response = await api.get(`/users/${userId}`); 
       this.user = response.data.user; 
+      // eslint-disable-next-line no-console
       console.log(this.user); 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Erro ao recuperar dados do usuário:", error);
     }
   },

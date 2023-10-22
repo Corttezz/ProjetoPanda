@@ -163,6 +163,7 @@ export default {
             await this.loadVideos(userId);
 
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Erro ao enviar dados para a biblioteca ou ao recuperar detalhes do vídeo:', error);
           }
 
@@ -173,6 +174,7 @@ export default {
       await this.loadVideos(userId);
       this.startPolling(); 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Erro na montagem:', error);
     }
     clearInterval(this.pollingInterval);
@@ -189,6 +191,7 @@ export default {
       }, 10000); // A cada 10 segundos, por exemplo.
     },
     onEditVideo(video) {
+      // eslint-disable-next-line no-console
       console.log('Editando vídeo:', video);
     },
     onDeleteVideo(video) {
@@ -224,9 +227,11 @@ export default {
       this.loading = true;
       try {
         const response = await axios.get(`https://projetopanda-webapp.azurewebsites.net/library/user/${userId}`);
+        // eslint-disable-next-line no-console
         console.log('Loaded videos:', response.data);
         this.videos = response.data;
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Erro ao carregar vídeos:', error);
       } finally {
         this.loading = false;
@@ -241,12 +246,13 @@ export default {
               'accept': 'application/json'
             }
           });
-
+          // eslint-disable-next-line no-console
           console.log('Video details:', response.data);
 
           // Se a solicitação for bem-sucedida e os dados forem recebidos, retorne os dados
           return response.data;
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error(`Tentativa ${attempt + 1} de buscar detalhes do vídeo falhou: `, error);
 
           // Se esta foi a última tentativa, rejeite a promessa
@@ -284,16 +290,19 @@ export default {
         this.videos = this.videos.filter(v => v.id !== video.id);
 
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Erro ao excluir vídeo:', error);
       }
     },
     async monitorVideoStatus(videoId, libraryId, interval = 30000, timeout = 3600000) {
+      // eslint-disable-next-line no-console
       console.log('Starting video status monitoring for videoId:', videoId);
 
       const startTime = new Date();
 
       const checkStatus = async () => {
         if (new Date() - startTime > timeout) {
+          // eslint-disable-next-line no-console
           console.error('Timeout exceeded while waiting for CONVERTED status');
           return;
         }
@@ -307,17 +316,18 @@ export default {
           });
 
           const videoDetails = response.data;
-
+          // eslint-disable-next-line no-console
           console.log('Current video status:', videoDetails.status);
 
           if (videoDetails.status === 'CONVERTED') {
+            // eslint-disable-next-line no-console
             console.log('Video converted, updating database.');
 
             const updateResponse = await axios.put(`https://projetopanda-webapp.azurewebsites.net/library/${videoId}`, {
               status: 'CONVERTED',
               videoExternalId: videoDetails.video_external_id,
             });
-
+            // eslint-disable-next-line no-console
             console.log('Database update response:', updateResponse.data);
 
             // Aqui é onde atualizamos o status do vídeo no frontend
@@ -329,10 +339,12 @@ export default {
               });
             }
           } else {
+            // eslint-disable-next-line no-console
             console.log(`Current status: ${videoDetails.status}. Re-checking in ${interval}ms.`);
             setTimeout(checkStatus, interval);
           }
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Error checking video status:', error);
           setTimeout(checkStatus, interval);
         }
@@ -340,9 +352,6 @@ export default {
 
       checkStatus();
     }
-
-
-
   },
 };
 </script>

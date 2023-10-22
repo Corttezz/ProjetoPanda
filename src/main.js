@@ -1,7 +1,7 @@
-
+// eslint-disable-next-line no-console
 const originalConsoleError = console.error;
 
-
+// eslint-disable-next-line no-console
 console.error = function(message, ...args) {
  
   const ignoreMessages = [

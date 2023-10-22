@@ -117,9 +117,11 @@ export default {
                     this.liveUrl = data.live_player;
                     this.responseReceived = true;
                 } else {
+                    // eslint-disable-next-line no-console
                     console.error("Failed to start live. Response:", response.statusText);
                 }
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error("Error starting live:", error);
             }
         },
@@ -135,13 +137,16 @@ export default {
 
         if (response.ok) {
             const data = await response.json();
+            // eslint-disable-next-line no-console
             console.log("Live has been ended:", data);
             // Aqui você pode adicionar qualquer lógica adicional que queira executar após finalizar a live
             this.responseReceived = false;  // Isto irá esconder os detalhes da live e mostrar a opção para começar uma nova live
         } else {
+            // eslint-disable-next-line no-console
             console.error("Failed to end live. Response:", response.statusText);
         }
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Error ending live:", error);
     }
 }

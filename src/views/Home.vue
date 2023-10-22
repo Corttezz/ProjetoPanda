@@ -26,7 +26,11 @@
                         <h3 class="text-center mt-4">Esqueceu sua senha?</h3>
                       </v-card-text>
                       <div class="text-center mt-3">
-                        <v-btn rounded color="purple darken-4" dark @click="login">ENTRAR</v-btn>
+                        <!-- Botão de Login -->
+                        <v-btn rounded color="purple darken-4" dark @click="login">
+                          <v-icon v-if="isLoggingIn">mdi-loading</v-icon> <!-- ícone de carregamento -->
+                          <span v-else>ENTRAR</span> <!-- texto original -->
+                        </v-btn>
                       </div>
                     </v-col>
                     <v-col cols="12" md="4" class="purple darken-4">
@@ -70,7 +74,11 @@
                         </v-form>
                       </v-card-text>
                       <div class="text-center mt-n5">
-                        <v-btn rounded color="purple darken-4" dark @click="register">CADASTRAR-SE</v-btn>
+                        <!-- Botão de Registro -->
+                        <v-btn rounded color="purple darken-4" dark @click="register">
+                          <v-icon v-if="isRegistering">mdi-loading</v-icon> <!-- ícone de carregamento -->
+                          <span v-else>CADASTRAR-SE</span> <!-- texto original -->
+                        </v-btn>
                       </div>
                     </v-col>
                   </v-row>
@@ -138,10 +146,12 @@ export default {
     email: '',
     password: '',
     name: '',
-    dialog: false, // controla a visibilidade do modal
-    dialogTitle: '', // título do modal
-    dialogMessage: '', // mensagem do modal
-    registerSuccessDialog: false, // controla a visibilidade do diálogo de sucesso no cadastro
+    dialog: false,
+    dialogTitle: '',
+    dialogMessage: '',
+    registerSuccessDialog: false,
+    isLoggingIn: false, // Adicione uma vírgula aqui
+    isRegistering: false // controla se o usuário está se registrando
   }),
   methods: {
     showErrorModal(title, message) {
@@ -150,6 +160,7 @@ export default {
       this.dialog = true;
     },
     async register() {
+      this.isRegistering = true;
       try {
         const response = await api.post('/users/register', {
           email: this.email,
@@ -163,6 +174,8 @@ export default {
         console.error("Erro ao registrar:", error.response.data);
         // Aqui, você pode querer mostrar um modal de erro ou outra forma de notificação
         this.showErrorModal('Erro no Registro', error.response.data.message || 'Ocorreu um erro desconhecido.');
+      } finally {
+        this.isRegistering = false;
       }
     },
     redirectToLogin() {
@@ -176,6 +189,7 @@ export default {
       }
     },
     async login() {
+      this.isLoggingIn = true;
       try {
         const response = await api.post('/users/login', {
           email: this.email,
@@ -191,8 +205,22 @@ export default {
         console.error("Erro ao fazer login:", error.response.data);
         // Exibe o modal de erro
         this.showErrorModal('Erro no Login', error.response.data.message || 'Ocorreu um erro desconhecido.');
+      } 
+      finally {
+        this.isLoggingIn = false;
       }
     }
   }
 };
 </script>
+
+<style scoped>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.mdi-loading {
+  animation: spin 2s linear infinite;
+}
+</style>

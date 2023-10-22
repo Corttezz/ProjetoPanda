@@ -2,57 +2,63 @@
   <v-container>
     <!-- Seção de Upload -->
     <v-row class="my-3">
-      <v-col>
-        <v-btn
-  id="upload-button" 
-  color="purple darken-4"
-  dark
-
->
-  <v-icon left>mdi-upload</v-icon>
-  Upload de Vídeo
-</v-btn>
-
+      <v-col class="d-flex align-center">
+        <v-btn id="upload-button" color="purple darken-4" dark>
+          <v-icon left>mdi-upload</v-icon>
+          Upload de Vídeo
+        </v-btn>
+      </v-col>
+      <v-col class="d-flex align-center justify-end">
+        <span class="font-weight-bold">Qtd. de vídeos: {{ videos.length }}</span>
       </v-col>
     </v-row>
 
+   <!-- Indicador de Carregamento -->
+   <div 
+      v-if="loading" 
+      class="loader-overlay"
+    >
+      <v-progress-circular
+        indeterminate
+        color="purple darken-2"
+        size="40"
+      ></v-progress-circular>
+    </div>
+
+    <!-- Mensagem quando não há vídeos -->
+    <v-row v-if="videos.length === 0" class="text-center align-center justify-center" style="height: 100vh;">
+  <v-col>
+    <p>Você ainda não tem vídeos, clique em "Upload de Vídeo" para começar.</p>
+    <v-img src="../assets/logo.png" alt="logo" max-width="300" class="mx-auto" style="opacity: 0.3;"></v-img>
+  </v-col>
+</v-row>
+
+
     <!-- Lista de Vídeos -->
     <v-row>
-      <v-col
-        v-for="video in videos"
-        :key="video.id"
-        cols="12"
-        sm="6"
-        md="4"
-      >
+      <v-col v-for="video in videos" :key="video.id" cols="12" sm="6" md="4">
         <v-hover v-slot:default="{ hover }">
-          <v-card
-            :elevation="hover ? 12 : 2"
-            class="mx-auto"
-            max-width="344"
-            link
-          >
-            <video
-              controls
-              class="video-preview"
-              :src="video.url"
-              @click.stop=""
-            ></video>
+          <v-card :elevation="hover ? 12 : 2" class="mx-auto" max-width="344" link>
+            <div style="position:relative;padding-top:56.25%;">
+              <iframe
+  :id="`panda-${video.id}`"
+  :src="`https://player-vz-fe9765d3-df0.tv.pandavideo.com.br/embed/?v=${video.video_external_id}&preload=false`"
+  style="border:none;position:absolute;top:0;left:0;"
+  width="100%"
+  height="100%"
+></iframe>
+
+            </div>
+
 
             <v-card-title>{{ video.title }}</v-card-title>
-            <v-card-subtitle>{{ video.description }}</v-card-subtitle>
+          <v-card-subtitle :class="statusClass(video.status)">{{ statusText(video.status) }}</v-card-subtitle>
 
             <v-card-actions>
-              <v-btn
-                icon
-                @click="onEditVideo(video)"
-              >
+              <v-btn icon @click="onEditVideo(video)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn
-                icon
-                @click="onDeleteVideo(video)"
-              >
+              <v-btn icon @click="onDeleteVideo(video)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-card-actions>
@@ -62,9 +68,11 @@
     </v-row>
   </v-container>
 </template>
-<script src="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.js"></script>
+
+
 <script>
-import axios from 'axios'; // importe o axios
+
+import axios from 'axios';
 import Uppy from '@uppy/core';
 import Dashboard from '@uppy/dashboard';
 import Tus from '@uppy/tus';
@@ -77,22 +85,26 @@ export default {
   name: 'Videos',
   data() {
     return {
-      videos: [], // Deve ser preenchido com dados reais, possivelmente de uma API
+      loading: true,
+      videos: [],
       uppy: null,
-      user: null, // para armazenar os dados do usuário
+      user: null,
     };
   },
   async mounted() {
     try {
-      // substitua 'userId' pelo ID real do usuário
-      const userId = localStorage.getItem('userId'); // ou outra forma de obter o userId
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('Usuário não autenticado');
+      }
+
       const response = await axios.get(`http://192.168.15.31:3000/users/${userId}`);
       this.user = response.data.user;
 
       this.uppy = new Uppy()
         .use(Dashboard, {
-          trigger: '#upload-button', // Este é o elemento que, quando clicado, abrirá o Dashboard do Uppy
-          inline: false, // Isso fará com que o painel apareça como um modal
+          trigger: '#upload-button',
+          inline: false,
         })
         .use(Tus, {
           endpoint: 'https://uploader-us01.pandavideo.com.br/files/',
@@ -101,20 +113,53 @@ export default {
         });
 
       this.uppy.on('file-added', (file) => {
+        const video_id = uuidv4();
         this.uppy.setFileMeta(file.id, {
           authorization: 'panda-f3c410ff76dad651c9834316eaa3cf45725ae97abc2162ad9abbe01b170c44e5',
-          folder_id: this.user.library_id, // use o library_id do usuário
-          // preciusa ser uuiv4 preciso gerar isso video_id: com uuidv4(),
-          
+          folder_id: this.user.library_id,
+          video_id,
         });
       });
 
-      this.uppy.on('complete', (result) => {
-        console.log('Upload completo! Resultado:', result);
-        // Aqui você pode adicionar lógica para fazer algo com o resultado, como adicionar o vídeo à lista
+      this.uppy.on('complete', async (result) => {
+        this.loading = true;
+  const successfulUploads = result.successful || [];
+  for (const file of successfulUploads) {
+    try {
+      const videoDetails = await this.fetchVideoDetails(file.meta.video_id);
+
+      await axios.post('http://192.168.15.31:3000/library', {
+        userId: userId,
+        videoId: file.meta.video_id,
+        videoExternalId: videoDetails.video_external_id,
+        status: 'DRAFT', // Definindo o status inicial como DRAFT
+        title: file.name,
+        libraryId: this.user.library_id,
       });
+
+      const newVideo = {
+        id: file.meta.video_id,
+        url: videoDetails.url,
+        video_external_id: videoDetails.video_external_id,
+        title: file.name,
+        description: videoDetails.description,
+        status: 'DRAFT', // Aqui também, asseguramos que o status inicial é DRAFT
+      };
+      this.videos.push(newVideo);
+
+      this.monitorVideoStatus(file.meta.video_id, this.user.library_id);
+
     } catch (error) {
-      console.error('Houve um erro ao buscar os dados do usuário ou inicializar o Uppy', error);
+      console.error('Erro ao enviar dados para a biblioteca ou ao recuperar detalhes do vídeo:', error);
+    }
+
+  }
+  this.loading = false;
+});
+
+      await this.loadVideos(userId);
+    } catch (error) {
+      console.error('Erro na montagem:', error);
     }
   },
   beforeDestroy() {
@@ -124,22 +169,154 @@ export default {
   },
   methods: {
     onEditVideo(video) {
-      // Implemente a lógica de edição aqui
       console.log('Editando vídeo:', video);
     },
     onDeleteVideo(video) {
-      // Implemente a lógica de exclusão aqui
       console.log('Excluindo vídeo:', video);
     },
+    statusClass(status) {
+      if (status === 'CONVERTED') {
+        return 'status-converted';
+      } else if (status === 'DRAFT') {
+        return 'status-draft';
+      }
+      return '';
+    },
+    statusText(status) {
+      switch (status) {
+        case 'DRAFT':
+          return 'Convertendo...';
+        case 'CONVERTED':
+          return 'Convertido';
+        default:
+          return status; // ou outro texto padrão que você queira mostrar
+      }
+    },
+    async loadVideos(userId) {
+      this.loading = true;
+      try {
+        const response = await axios.get(`http://192.168.15.31:3000/library/user/${userId}`);
+        console.log('Loaded videos:', response.data);
+        this.videos = response.data;
+      } catch (error) {
+        console.error('Erro ao carregar vídeos:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchVideoDetails(videoId, maxAttempts = 3, delay = 2000) {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          const response = await axios.get(`https://api-v2.pandavideo.com.br/videos/${videoId}`, {
+            headers: {
+              'Authorization': 'panda-f3c410ff76dad651c9834316eaa3cf45725ae97abc2162ad9abbe01b170c44e5',
+              'accept': 'application/json'
+            }
+          });
+
+          console.log('Video details:', response.data);
+
+          // Se a solicitação for bem-sucedida e os dados forem recebidos, retorne os dados
+          return response.data;
+        } catch (error) {
+          console.error(`Tentativa ${attempt + 1} de buscar detalhes do vídeo falhou: `, error);
+
+          // Se esta foi a última tentativa, rejeite a promessa
+          if (attempt + 1 === maxAttempts) {
+            throw new Error(`Falha ao buscar detalhes do vídeo após ${maxAttempts} tentativas`);
+          }
+
+          // Aguarde antes de tentar novamente
+          await new Promise(res => setTimeout(res, delay));
+        }
+      }
+    },
+    async monitorVideoStatus(videoId, libraryId, interval = 30000, timeout = 3600000) {
+  console.log('Starting video status monitoring for videoId:', videoId);
+
+  const startTime = new Date();
+
+  const checkStatus = async () => {
+    if (new Date() - startTime > timeout) {
+      console.error('Timeout exceeded while waiting for CONVERTED status');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`https://api-v2.pandavideo.com.br/videos/${videoId}`, {
+        headers: {
+          'Authorization': 'panda-f3c410ff76dad651c9834316eaa3cf45725ae97abc2162ad9abbe01b170c44e5',
+          'accept': 'application/json'
+        }
+      });
+
+      const videoDetails = response.data;
+
+      console.log('Current video status:', videoDetails.status);
+
+      if (videoDetails.status === 'CONVERTED') {
+        console.log('Video converted, updating database.');
+
+        const updateResponse = await axios.put(`http://192.168.15.31:3000/library/${videoId}`, {
+          status: 'CONVERTED',
+          videoExternalId: videoDetails.video_external_id,
+        });
+
+        console.log('Database update response:', updateResponse.data);
+
+        // Aqui é onde atualizamos o status do vídeo no frontend
+        const index = this.videos.findIndex(v => v.id === videoId);
+        if (index !== -1) {
+          this.$set(this.videos, index, {
+            ...this.videos[index],
+            status: 'CONVERTED', // atualiza o status para CONVERTED
+          });
+        }
+      } else {
+        console.log(`Current status: ${videoDetails.status}. Re-checking in ${interval}ms.`);
+        setTimeout(checkStatus, interval);
+      }
+    } catch (error) {
+      console.error('Error checking video status:', error);
+      setTimeout(checkStatus, interval);
+    }
+  };
+
+  checkStatus();
+}
+
+
   },
 };
 </script>
 
 
 <style scoped>
+
+.v-content {
+  padding-left: 0px !important
+}
+
+.status-converted {
+  color: green !important; 
+}
+
+.status-draft {
+  color: red !important; 
+}
+
 .video-preview {
   width: 100%;
-  max-height: 300px; /* Ajuste conforme necessário */
-  object-fit: cover; /* Isso fará com que o vídeo se ajuste ao container */
+  max-height: 300px;
+  object-fit: cover;
 }
+
+.loader-overlay {
+  position: fixed; /* Fixo em relação à janela do navegador */
+  top: 6%; /* Posicionado na metade da tela verticalmente */
+  left: 58%; /* Posicionado na metade da tela horizontalmente */
+  transform: translate(-50%, -50%); /* Desloca o elemento para trás pela metade de sua largura e altura */
+  z-index: 9999; /* Certifique-se de que está no topo */
+}
+
 </style>

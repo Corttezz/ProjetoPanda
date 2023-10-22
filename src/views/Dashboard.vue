@@ -63,6 +63,9 @@
   </script>
   
   <style scoped>
+  .v-content {
+  padding-left: 4% !important
+}
   .active-item {
     background-color: rgba(255, 255, 255, 0.2) !important; /* Cor de fundo quando o item está ativo */
   }

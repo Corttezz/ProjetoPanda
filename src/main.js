@@ -1,3 +1,23 @@
+
+const originalConsoleError = console.error;
+
+
+console.error = function(message, ...args) {
+ 
+  const ignoreMessages = [
+    'Lockdown failed',
+    'harden is not defined',
+   
+  ];
+
+
+  if (!ignoreMessages.some(ignoreMessage => message.includes(ignoreMessage))) {
+   
+    originalConsoleError(message, ...args);
+  }
+};
+
+
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'

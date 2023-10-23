@@ -18,6 +18,8 @@
       <v-progress-circular indeterminate color="purple darken-2" size="40"></v-progress-circular>
     </div>
 
+    <v-divider style="margin-bottom: 2.5%;"></v-divider>
+
     <!-- Mensagem quando não há vídeos -->
     <v-row v-if="videos.length === 0" class="text-center align-center justify-center" style="height: 100vh;">
       <v-col>
@@ -59,6 +61,7 @@
         </v-hover>
       </v-col>
     </v-row>
+
 
     <v-dialog v-model="confirmDeleteDialog" persistent max-width="300">
       <v-card>

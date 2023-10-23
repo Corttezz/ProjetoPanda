@@ -73,6 +73,7 @@ export default {
       // Atualizando userDetails com os dados recebidos
       this.userDetails = response.data.user;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
       alert('Erro ao carregar os detalhes do usuário.');
     }

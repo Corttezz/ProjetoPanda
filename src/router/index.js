@@ -38,6 +38,12 @@ const routes = [
         name: 'live',
         component: () => import('../views/Live.vue'),
       },
+      {
+        path: '/video/:videoId',
+        name: 'video-player',
+        component: () => import('../views/VideoPlayer.vue'),
+        props: true // Isso permite que o componente use o videoId como uma prop
+      }
     ],
   },
 ];

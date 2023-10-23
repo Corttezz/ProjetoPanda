@@ -18,9 +18,10 @@
           v-for="item in menuItems" 
           :key="item.title" 
           link 
-          :to="item.link"
+          :to="item.title !== 'Sair' ? item.link : undefined"
           :active-class="item.activeClass"
           exact
+          @click="item.title === 'Sair' && confirmLogout()"
         >
           <v-list-item-icon>
             <v-icon>{{ item.icon }}</v-icon>
@@ -36,6 +37,21 @@
     <v-main>
       <router-view></router-view>
     </v-main>
+
+    <!-- Diálogo de confirmação de logout -->
+    <v-dialog v-model="logoutDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Confirmação</v-card-title>
+        <v-card-text>
+          Tem certeza de que deseja sair?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red darken-1" text @click="logoutDialog = false">Cancelar</v-btn>
+          <v-btn color="green darken-1" text @click="logout">Sair</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
@@ -47,12 +63,26 @@ export default {
     return {
       drawer: true, // Controle para a visibilidade do menu
       user: null, 
+      logoutDialog: false, // controla a visibilidade do diálogo de logout
       menuItems: [
         { title: 'Vídeos', icon: 'mdi-video', link: '/dashboard/videos', activeClass: 'active-item' },
         { title: 'Conta', icon: 'mdi-account', link: '/dashboard/account', activeClass: 'active-item' },
         { title: 'Live', icon: 'mdi-access-point', link: '/dashboard/live', activeClass: 'active-item' },
+        { title: 'Sair', icon: 'mdi-logout', link: '/', activeClass: 'active-item' },
       ],
     };
+  },
+  methods: {
+    confirmLogout() {
+      this.logoutDialog = true; // exibe o diálogo de logout
+    },
+    logout() {
+      // Aqui, você colocaria a lógica para lidar com o logout do usuário
+      // Por exemplo, limpar o localStorage, Vuex store, etc.
+      localStorage.removeItem('userId');
+      localStorage.removeItem('token');
+      this.$router.push('/'); // redireciona para a página inicial ou de login
+    },
   },
   async created() {
     try {
@@ -82,8 +112,7 @@ export default {
 @media (max-width: 960px) {
   .v-main {
     padding-left: 0 !important; /* Remover o padding lateral para dispositivos móveis */
-    padding-top: 0 !important
+    padding-top: 0 !important;
   }
 }
-
 </style>

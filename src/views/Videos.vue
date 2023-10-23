@@ -33,17 +33,16 @@
     <v-row>
       <v-col v-for="video in videos" :key="video.id" cols="12" sm="6" md="4">
         <v-hover v-slot:default="{ hover }">
-          <v-card :elevation="hover ? 12 : 2" class="mx-auto" max-width="344" link>
+          <v-card :elevation="hover ? 12 : 2" class="mx-auto" max-width="344" @click="navigateToVideo(video.video_external_id)">
             <div style="position:relative;padding-top:56.25%;">
               <iframe :id="`panda-${video.id}`"
                 :src="`https://player-vz-fe9765d3-df0.tv.pandavideo.com.br/embed/?v=${video.video_external_id}&preload=false`"
                 style="border:none;position:absolute;top:0;left:0;" width="100%" height="100%"></iframe>
-
             </div>
-
-
+           
             <v-card-title>{{ video.title }}</v-card-title>
             <v-card-subtitle :class="statusClass(video.status)">{{ statusText(video.status) }}</v-card-subtitle>
+          
             <v-card-text>
               {{ video.video_id }}
             </v-card-text>
@@ -56,7 +55,9 @@
               <v-btn icon @click="onDeleteVideo(video)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
+            
             </v-card-actions>
+        
           </v-card>
         </v-hover>
       </v-col>
@@ -188,6 +189,9 @@ export default {
     }
   },
   methods: {
+    navigateToVideo(videoId) {
+    this.$router.push({ name: 'video-player', params: { videoId } });
+  },
     startPolling() {
       this.pollingInterval = setInterval(async () => {
         await this.loadVideos(localStorage.getItem('userId'));
@@ -378,6 +382,8 @@ export default {
   max-height: 300px;
   object-fit: cover;
 }
+
+
 
 .loader-overlay {
   position: fixed;

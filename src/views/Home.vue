@@ -25,7 +25,7 @@
                         </v-form>
                         <h3 class="text-center mt-4">Esqueceu sua senha?</h3>
                       </v-card-text>
-                      <div class="text-center mt-3">
+                      <div class="text-center mt-3" style="padding-bottom: 4%;">
                         <!-- Botão de Login -->
                         <v-btn rounded color="purple darken-4" dark @click="login">
                           <v-icon v-if="isLoggingIn">mdi-loading</v-icon> <!-- ícone de carregamento -->
@@ -38,7 +38,7 @@
                         <h1 class="text-center display-1">Olá, Amigo!</h1>
                         <p class="text-center">Insira seus dados pessoais e comece sua jornada conosco</p>
                       </v-card-text>
-                      <div class="text-center">
+                      <div class="text-center" style="padding-bottom: 4%;">
                         <v-btn rounded outlined dark @click="step++">CADASTRE-SE</v-btn>
                       </div>
                     </v-col>
@@ -73,7 +73,7 @@
                             color="purple darken-4" v-model="password" />
                         </v-form>
                       </v-card-text>
-                      <div class="text-center mt-n5">
+                      <div class="text-center mt-n5" style="padding-bottom: 4%; padding-top: 4%;">
                         <!-- Botão de Registro -->
                         <v-btn rounded color="purple darken-4" dark @click="register">
                           <v-icon v-if="isRegistering">mdi-loading</v-icon> <!-- ícone de carregamento -->

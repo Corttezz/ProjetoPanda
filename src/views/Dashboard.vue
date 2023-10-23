@@ -71,7 +71,7 @@ export default {
 
 <style scoped>
 .v-content {
-  padding-left: 0% !important;
+  padding: 0% !important;
 }
 
 .active-item {
@@ -85,4 +85,5 @@ export default {
     padding-top: 0 !important
   }
 }
+
 </style>

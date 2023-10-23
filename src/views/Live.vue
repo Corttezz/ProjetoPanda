@@ -73,8 +73,8 @@
         </div>
 
         
-    </div>
-    <div style="position:relative;padding-top:75%; flex: 1;">
+    </div >
+    <div v-if="responseReceived" style="position:relative;padding-top:75%; flex: 1;">
             <iframe :id="'panda-' + liveId" :src="liveUrl"
                 style="border:none;position:absolute;top:0;left:0;width:100%;height:100%;"
                 allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen=true
@@ -189,14 +189,6 @@ export default {
     /* centraliza os itens verticalmente */
 }
 
-v-text-field__slot input {
-    width: 500px !important;
-    font-size: 18px;
-    /* Aumenta o tamanho da fonte */
-    padding: 10px 12px;
-    /* Adiciona algum espaço interno para tornar o campo maior */
-    ;
-}
 
 .end-button {
     position: absolute;

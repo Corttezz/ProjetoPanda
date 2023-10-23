@@ -6,7 +6,7 @@
       <v-toolbar-title class="white--text">Dashboard</v-toolbar-title>
     </v-app-bar>
 
-    <v-navigation-drawer app v-model="drawer" width="250" color="purple darken-4" dark mobile-break-point="960">
+    <v-navigation-drawer app v-model="drawer" width="250" color="purple darken-4" dark mobile-breakpoint="960">
       <v-list>
         <v-list-item>
           <v-list-item-content>
@@ -33,9 +33,9 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-content>
+    <v-main>
       <router-view></router-view>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 
@@ -70,7 +70,7 @@ export default {
 </script>
 
 <style scoped>
-.v-content {
+.v-main {
   padding: 0% !important;
 }
 
@@ -80,7 +80,7 @@ export default {
 
 /* Estilos para dispositivos móveis */
 @media (max-width: 960px) {
-  .v-content {
+  .v-main {
     padding-left: 0 !important; /* Remover o padding lateral para dispositivos móveis */
     padding-top: 0 !important
   }

@@ -358,7 +358,7 @@ export default {
 
 
 <style scoped>
-.v-content {
+.v-main {
   padding-left: 0px !important
 }
 

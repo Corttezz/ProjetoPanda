@@ -4,9 +4,6 @@
       <v-toolbar dark flat color="purple darken-4">
         <v-toolbar-title>Perfil</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon @click="closeProfile">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
       </v-toolbar>
 
       <v-card-text>
@@ -162,9 +159,7 @@ export default {
         this.loading = false;
       }
     },
-    closeProfile() {
-      // Lógica para fechar o perfil ou navegar para fora
-    }
+   
   },
   async mounted() {
     try {

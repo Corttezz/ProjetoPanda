@@ -115,15 +115,15 @@
 <style scoped>
 .v-application,
 .text-center.display-1,
-/* Alvo da classe display-1 */
+
 .text-center.display-2,
-/* Alvo da classe display-2 */
+
 h1,
 h4,
 h5 {
   /* Alvo de elementos de título específicos */
   font-family: 'Poppins', sans-serif !important;
-  /* !important para garantir que sobrescreva outros estilos */
+
 }
 </style>
 <script>
@@ -150,8 +150,8 @@ export default {
     dialogTitle: '',
     dialogMessage: '',
     registerSuccessDialog: false,
-    isLoggingIn: false, // Adicione uma vírgula aqui
-    isRegistering: false // controla se o usuário está se registrando
+    isLoggingIn: false, 
+    isRegistering: false 
   }),
   methods: {
     showErrorModal(title, message) {
@@ -169,12 +169,11 @@ export default {
         });
         // eslint-disable-next-line no-console
         console.log(response.data);
-        // Se o cadastro foi bem-sucedido, mostre o diálogo de sucesso
+
         this.registerSuccessDialog = true;
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error("Erro ao registrar:", error.response.data);
-        // Aqui, você pode querer mostrar um modal de erro ou outra forma de notificação
         this.showErrorModal('Erro no Registro', error.response.data.message || 'Ocorreu um erro desconhecido.');
       } finally {
         this.isRegistering = false;

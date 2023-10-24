@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import api from '@/services/api'; // Certifique-se de importar sua instância axios configurada
+import api from '@/services/api'; 
 
 export default {
   data() {
@@ -77,8 +77,7 @@ export default {
       this.logoutDialog = true; // exibe o diálogo de logout
     },
     logout() {
-      // Aqui, você colocaria a lógica para lidar com o logout do usuário
-      // Por exemplo, limpar o localStorage, Vuex store, etc.
+
       localStorage.removeItem('userId');
       localStorage.removeItem('token');
       this.$router.push('/'); // redireciona para a página inicial ou de login
@@ -111,7 +110,7 @@ export default {
 /* Estilos para dispositivos móveis */
 @media (max-width: 960px) {
   .v-main {
-    padding-left: 0 !important; /* Remover o padding lateral para dispositivos móveis */
+    padding-left: 0 !important; 
     padding-top: 0 !important;
   }
 }

@@ -338,7 +338,7 @@ export default {
               videoExternalId: videoDetails.video_external_id,
             });
 
-            if (updateResponse.status === 200) { // Verifique o código de status correto conforme sua API
+            if (updateResponse.status === 200) { 
               // eslint-disable-next-line no-console
               console.log('Database update response:', updateResponse.data);
               resolve(videoDetails);
@@ -388,14 +388,9 @@ export default {
 
 .loader-overlay {
   position: fixed;
-  /* Fixo em relação à janela do navegador */
   top: 6%;
-  /* Posicionado na metade da tela verticalmente */
   left: 58%;
-  /* Posicionado na metade da tela horizontalmente */
   transform: translate(-50%, -50%);
-  /* Desloca o elemento para trás pela metade de sua largura e altura */
   z-index: 9999;
-  /* Certifique-se de que está no topo */
 }
 </style>

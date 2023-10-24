@@ -1,11 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://projetopanda-webapp.azurewebsites.net', // ou outra URL base que você está usando
-  // outros cabeçalhos e configurações globais, se houver
+  baseURL: 'https://projetopanda-webapp.azurewebsites.net', 
+
 });
 
-// Solicitar interceptor para incluir o token JWT no cabeçalho de autorização de cada solicitação
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('userToken');

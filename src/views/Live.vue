@@ -173,13 +173,9 @@ export default {
     .info {
         width: 100% !important
     }
-
-    /* Remova a posição absoluta do botão para permitir que ele se mova com o fluxo do documento */
     .end-button {
         position: static !important
     }
-
-    /* Adicione quaisquer outros ajustes de estilo necessários para este tamanho de tela */
 }
 
 .start-button {

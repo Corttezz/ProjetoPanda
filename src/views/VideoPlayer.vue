@@ -81,29 +81,28 @@
   margin: 4px 2px;
   transition-duration: 0.4s;
   cursor: pointer;
-  border-radius: 12px; /* Bordas arredondadas */
+  border-radius: 12px;
 }
 
 .control-button:hover {
   background-color: white; 
   color: black; 
-  border: 2px solid #4a148c; /* Adiciona borda quando houver hover */
+  border: 2px solid #4a148c;
 }
 
 .video-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Isso faz com que o contêiner ocupe a altura total da viewport. */
+  height: 100vh; 
   flex-direction: column;
 }
 
 .video-wrapper {
   position: relative;
-  width: 70%; /* Ajuste a largura do vídeo conforme necessário. */
-  /* Mantém a proporção do vídeo */
-  padding-top: 39.25%; /* (altura / largura) * 100 (neste caso 9 / 16 = 0.5625) */
-  margin-bottom: 20px; /* Espaço entre o vídeo e os controles */
+  width: 70%;
+  padding-top: 39.25%; 
+  margin-bottom: 20px; 
 }
 
 .responsive-iframe {

@@ -52,7 +52,7 @@
               <v-btn icon @click="onEditVideo(video)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon @click="onDeleteVideo(video)">
+              <v-btn icon @click.stop="onDeleteVideo(video)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             
@@ -277,6 +277,7 @@ export default {
       }
     },
     async deleteVideo(video) {
+      this.loading = true;
       try {
         // Excluir do backend local
         await axios.delete(`https://projetopanda-webapp.azurewebsites.net/library/${video.video_id}`);
@@ -304,6 +305,7 @@ export default {
         // eslint-disable-next-line no-console
         console.error('Erro ao excluir vídeo:', error);
       }
+      this.loading = false;
     },
     async monitorVideoStatus(videoId, libraryId, interval = 30000, timeout = 3600000) {
       // eslint-disable-next-line no-console

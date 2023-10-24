@@ -185,5 +185,5 @@ export default {
 </script>
 
 <style scoped>
-/* estilos específicos para a página da conta */
+
 </style>

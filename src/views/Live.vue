@@ -46,9 +46,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="end-live-button">
-                        <button @click="endLive" class="end-button">Finalizar Live</button>
-                    </div>
+                    
                     <!-- Stream Key -->
                     <div class="col col-12" style="background-color: #4a148c;">
                         <div
@@ -72,6 +70,9 @@
                         </div>
                     </div>
                 </div>
+                <div class="end-live-button">
+                        <button @click="endLive" class="end-button">Finalizar Live</button>
+                    </div>
             </div>
         </div>
 
@@ -158,6 +159,29 @@ export default {
 </script>
 
 <style scoped>
+
+@media screen and (max-width: 560px) {
+    .info-container {
+        flex-direction: column-reverse !important
+    }
+
+    .end-live-button {
+        width: 100% !important;
+        margin-top: 10px !important
+    }
+
+    .info {
+        width: 100% !important
+    }
+
+    /* Remova a posição absoluta do botão para permitir que ele se mova com o fluxo do documento */
+    .end-button {
+        position: static !important
+    }
+
+    /* Adicione quaisquer outros ajustes de estilo necessários para este tamanho de tela */
+}
+
 .start-button {
     background-color: #4a148c;
     color: white;

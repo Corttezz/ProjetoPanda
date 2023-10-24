@@ -83,7 +83,6 @@
 
 
 <script>
-
 import axios from 'axios';
 import Uppy from '@uppy/core';
 import Dashboard from '@uppy/dashboard';
@@ -92,6 +91,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 import '@uppy/core/dist/style.min.css';
 import '@uppy/dashboard/dist/style.min.css'
+
+const STATUS_CONVERTED = 'CONVERTED';
+const STATUS_DRAFT = 'DRAFT';
 
 export default {
   name: 'Videos',
@@ -147,7 +149,7 @@ export default {
               userId: userId,
               videoId: file.meta.video_id,
               videoExternalId: videoDetails.video_external_id,
-              status: 'DRAFT', // Definindo o status inicial como DRAFT
+              status: STATUS_DRAFT, // Definindo o status inicial como DRAFT
               title: file.name,
               libraryId: this.user.library_id,
             });
@@ -159,7 +161,7 @@ export default {
               video_external_id: videoDetails.video_external_id,
               title: file.name,
               description: videoDetails.description,
-              status: 'DRAFT', // Aqui também, asseguramos que o status inicial é DRAFT
+              status: STATUS_DRAFT, // Aqui também, asseguramos que o status inicial é DRAFT
             };
             this.videos.push(newVideo);
 
@@ -170,7 +172,6 @@ export default {
             // eslint-disable-next-line no-console
             console.error('Erro ao enviar dados para a biblioteca ou ao recuperar detalhes do vídeo:', error);
           }
-
         }
         this.loading = false;
       });
@@ -187,11 +188,14 @@ export default {
     if (this.uppy) {
       this.uppy.close();
     }
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   },
   methods: {
     navigateToVideo(videoId) {
-    this.$router.push({ name: 'video-player', params: { videoId } });
-  },
+      this.$router.push({ name: 'video-player', params: { videoId } });
+    },
     startPolling() {
       this.pollingInterval = setInterval(async () => {
         await this.loadVideos(localStorage.getItem('userId'));
@@ -210,26 +214,26 @@ export default {
       this.confirmDeleteDialog = false;
       this.selectedVideo = null;
     },
-
     statusClass(status) {
-      if (status === 'CONVERTED') {
-        return 'status-converted';
-      } else if (status === 'DRAFT') {
-        return 'status-draft';
+      switch (status) {
+        case STATUS_CONVERTED:
+          return 'status-converted';
+        case STATUS_DRAFT:
+          return 'status-draft';
+        default:
+          return '';
       }
-      return '';
     },
     statusText(status) {
       switch (status) {
-        case 'DRAFT':
+        case STATUS_DRAFT:
           return 'Convertendo...';
-        case 'CONVERTED':
+        case STATUS_CONVERTED:
           return 'Convertido';
         default:
           return status; // ou outro texto padrão que você queira mostrar
       }
     },
-
     async loadVideos(userId) {
       this.loading = true;
       try {
@@ -244,7 +248,7 @@ export default {
         this.loading = false;
       }
     },
-    async fetchVideoDetails(videoId, maxAttempts = 3, delay = 2000) {
+    async fetchVideoDetails(videoId, maxAttempts = 5, delay = 2000) {
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
           const response = await axios.get(`https://api-v2.pandavideo.com.br/videos/${videoId}`, {
@@ -307,10 +311,9 @@ export default {
 
       const startTime = new Date();
 
-      const checkStatus = async () => {
+      const checkStatus = async (resolve, reject) => {
         if (new Date() - startTime > timeout) {
-          // eslint-disable-next-line no-console
-          console.error('Timeout exceeded while waiting for CONVERTED status');
+          reject(new Error('Timeout exceeded while waiting for CONVERTED status'));
           return;
         }
 
@@ -326,42 +329,40 @@ export default {
           // eslint-disable-next-line no-console
           console.log('Current video status:', videoDetails.status);
 
-          if (videoDetails.status === 'CONVERTED') {
+          if (videoDetails.status === STATUS_CONVERTED) {
             // eslint-disable-next-line no-console
             console.log('Video converted, updating database.');
 
             const updateResponse = await axios.put(`https://projetopanda-webapp.azurewebsites.net/library/${videoId}`, {
-              status: 'CONVERTED',
+              status: STATUS_CONVERTED,
               videoExternalId: videoDetails.video_external_id,
             });
-            // eslint-disable-next-line no-console
-            console.log('Database update response:', updateResponse.data);
 
-            // Aqui é onde atualizamos o status do vídeo no frontend
-            const index = this.videos.findIndex(v => v.id === videoId);
-            if (index !== -1) {
-              this.$set(this.videos, index, {
-                ...this.videos[index],
-                status: 'CONVERTED'
-              });
+            if (updateResponse.status === 200) { // Verifique o código de status correto conforme sua API
+              // eslint-disable-next-line no-console
+              console.log('Database update response:', updateResponse.data);
+              resolve(videoDetails);
+            } else {
+              throw new Error('Failed to update the database');
             }
           } else {
             // eslint-disable-next-line no-console
             console.log(`Current status: ${videoDetails.status}. Re-checking in ${interval}ms.`);
-            setTimeout(checkStatus, interval);
+            setTimeout(() => checkStatus(resolve, reject), interval);
           }
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error('Error checking video status:', error);
-          setTimeout(checkStatus, interval);
+          reject(error);
         }
       };
 
-      checkStatus();
+      return new Promise(checkStatus);
     }
   },
 };
 </script>
+
 
 
 <style scoped>

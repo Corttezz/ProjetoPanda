@@ -119,9 +119,11 @@ export default {
                     this.liveUrl = data.live_player;
                     this.responseReceived = true;
                 } else {
+                    // eslint-disable-next-line no-console
                     console.error("Failed to start live. Response:", response.statusText);
                 }
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error("Error starting live:", error);
             } finally {
                 this.loading = false; // desativado quando a chamada é concluída, seja com sucesso ou erro
@@ -139,12 +141,15 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
+                    // eslint-disable-next-line no-console
                     console.log("Live has been ended:", data);
                     this.responseReceived = false;
                 } else {
+                    // eslint-disable-next-line no-console
                     console.error("Failed to end live. Response:", response.statusText);
                 }
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error("Error ending live:", error);
             }
         }

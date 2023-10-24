@@ -144,7 +144,7 @@ export default {
           return;
         }
 
-        const response = await axios.put(`http://192.168.15.31:3000/users/${userId}`, { updateData: updatedFields });
+        const response = await axios.put(`https://projetopanda-webapp.azurewebsites.net/users/${userId}`, { updateData: updatedFields });
 
         if (response.status === 200) {
           this.userDetails = { ...this.editableFields };
@@ -173,7 +173,7 @@ export default {
         throw new Error('User ID não encontrado');
       }
 
-      const response = await axios.get(`http://192.168.15.31:3000/users/${userId}`);
+      const response = await axios.get(`https://projetopanda-webapp.azurewebsites.net/users/${userId}`);
       this.userDetails = response.data.user;
       this.editableFields = { ...this.userDetails };
     } catch (error) {
